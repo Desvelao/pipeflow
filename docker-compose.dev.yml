@@ -1,0 +1,10 @@
+services:
+  pipeflow-dev:
+    build: ./docker
+    image: pipeflow-dev
+    container_name: price-scrapper
+    volumes:
+      - ./:/home/app
+      - ./docker/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+    working_dir: /home/app
+    entrypoint: ["sh", "/docker-entrypoint.sh", "/dev/null"]
