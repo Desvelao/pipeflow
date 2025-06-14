@@ -1,0 +1,22 @@
+package = "pipeflow"
+version = "dev-1"
+source = {
+   url = "https://github.com/Desvelao/pipeflow"
+}
+description = {
+   detailed = [[
+Transform data through a pipeline definition
+]],
+   homepage = "https://github.com/Desvelao/pipeflow",
+   license = "MIT"
+}
+dependencies = {
+   "lua >= 5.1",
+   "busted == 2.2.0-1"
+}
+build = {
+   type = "builtin",
+   modules = {
+      script = "pipeflow.lua"
+   }
+}
