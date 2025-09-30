@@ -29,6 +29,10 @@
           select.appendChild(opt);
         });
 
+        select.addEventListener("change", (e) => {
+            window.location.href = window.location.href + select.value;
+        });
+
         // Optional: preselect the first (latest) tag
         if (tags.length > 0) {
           select.value = tags[0].name + "/";
