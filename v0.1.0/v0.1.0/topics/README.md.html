@@ -1,0 +1,369 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>pipeflow - Process data in a pipeline (v0.1.0)</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>pipeflow</h1>
+
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Description">Description </a></li>
+<li><a href="#Features">Features </a></li>
+<li><a href="#Pipeline_spec">Pipeline spec </a></li>
+<li><a href="#data_variable">data variable </a></li>
+<li><a href="#ctx_variable">ctx variable </a></li>
+<li><a href="#Unregistered_processors">Unregistered processors </a></li>
+<li><a href="#Logger">Logger </a></li>
+<li><a href="#Change_version">Change version </a></li>
+<li><a href="#Run_environment">Run environment </a></li>
+<li><a href="#Access_to_container">Access to container </a></li>
+<li><a href="#Code_formatting">Code formatting </a></li>
+</ul>
+
+
+<h2>Topics</h2>
+<ul class="">
+  <li><strong>README</strong></li>
+</ul>
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><a href="../index.html">Pipeflow</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+
+<h1>pipeflow</h1>
+
+<p><a name="Description"></a></p>
+<h2>Description</h2>
+
+<p>This library provides a sequentional processor to transform data. This is inspired by the ingest pipeline of Elasticsearch.</p>
+
+<p>It can be used to process any data type and apply changes with different processors.</p>
+
+<p>Each processor can modify the data or use it to print or send to external services.</p>
+
+<p><a name="Features"></a></p>
+<h2>Features</h2>
+
+<ul>
+    <li>Transform the data using processors</li>
+    <li>Run conditional processors defining a condition in Lua language using the data and context (<code>ctx</code>)</li>
+    <li>Manage errors in the processors using a on failure pipeline</li>
+    <li>Skip applygin processors</li>
+</ul>
+
+<h1>Usage</h1>
+
+
+<pre>
+<span class="comment">-- import the library
+</span><span class="keyword">local</span> pipeflow = <span class="global">require</span>(<span class="string">"pipeflow"</span>)
+
+<span class="comment">-- Define processors
+</span><span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">sum</span>(options, data, ctx, utils)
+    <span class="keyword">return</span> data + options.value
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">multiply</span>(options, data, ctx, utils)
+    <span class="keyword">return</span> data * options.value
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> <span class="global">debug</span>(options, data, ctx, utils)
+    <span class="global">print</span>(options.label, data)
+    <span class="keyword">return</span> data <span class="comment">-- ensure to return the value despite this is not modified
+</span><span class="keyword">end</span>
+
+<span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">throw_error</span>(options, data, ctx, utils)
+    <span class="global">error</span>(options.message)
+    <span class="keyword">return</span> data
+<span class="keyword">end</span>
+
+<span class="comment">-- Define pipeline
+</span><span class="keyword">local</span> pipeline = {
+    description = <span class="string">"Apply operations to a number"</span>,
+    processors = {
+        {
+            <span class="global">type</span> = <span class="string">"sum"</span>, <span class="comment">-- Define the processor type
+</span>            options = { <span class="comment">-- Define the processor options
+</span>                <span class="string">"value"</span> = <span class="number">2</span>
+            }
+        },
+        {
+            [<span class="string">'if'</span>]: <span class="string">"data &lt; 2"</span>, <span class="comment">-- Add a conditional processor using lua language. data is the value to process
+</span>            <span class="global">type</span> = <span class="string">"multiply"</span>,
+            options = {
+                <span class="string">"value"</span> = <span class="number">3</span>
+            }
+        },
+        {
+            <span class="global">type</span> = <span class="string">"debug"</span>,
+            tag = <span class="string">"debbuger-processor"</span>, <span class="comment">-- define a tag, this is for debugging purpose
+</span>            options = {
+                <span class="string">"label"</span>: <span class="string">"Debug"</span>
+            }
+        },
+        {
+            <span class="global">type</span> = <span class="string">"error"</span>,
+            tag = <span class="string">"error-processor-ignore-failure"</span>, <span class="comment">-- define a tag, this is for debugging purpose
+</span>            options = {
+                <span class="string">"message"</span>: <span class="string">"This is an error"</span>
+            },
+            ignore_failure: <span class="keyword">true</span> <span class="comment">-- ignore the errors
+</span>        },
+        {
+            <span class="global">type</span> = <span class="string">"error"</span>,
+            options = {
+                <span class="string">"message"</span>: <span class="string">"This is an error"</span>
+            }
+            on_failure: { <span class="comment">-- define a on failure sub pipeline to run if the parent processor fails
+</span>                {
+                    <span class="string">"type"</span> = <span class="string">"debug"</span>,
+                    <span class="string">"options"</span> = {
+                        <span class="string">"label"</span>: <span class="string">"Debug on error"</span>
+                    }
+                },
+            }
+        },
+        {
+            options = {
+                <span class="string">"message"</span>: <span class="string">"This is a processor defined in the pipeline"</span>
+            },
+            processor = <span class="keyword">function</span>(options, data)
+                <span class="global">print</span>(options.message)
+                <span class="keyword">return</span> data
+            <span class="keyword">end</span>
+        }
+    }
+}
+
+<span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">unregistered_processor</span>(option, data)
+    <span class="global">print</span>(<span class="string">'This is an unregistered_processor'</span>)
+    <span class="keyword">return</span> data
+<span class="keyword">end</span>
+
+<span class="keyword">local</span> result = <span class="function-name">pipeflow</span>(
+    pipeline, <span class="comment">-- pipeline definition
+</span>    { sum = sum, multiply = multiply, <span class="global">debug</span> = <span class="global">debug</span>, throw_error = throw_error }, <span class="comment">-- define the processors known by the pipeline
+</span>    <span class="number">45</span> <span class="comment">-- initial value of the data variable
+</span>    {} <span class="comment">-- ctx variable
+</span>    { logger } <span class="comment">-- utils. optional. See pipeline logger
+</span>)
+
+
+<span class="comment">-- If you want to use programming based on objects, you can create a new instance
+</span><span class="keyword">local</span> pipeflow_instance = pipeflow:<span class="function-name">new</span>({
+    name = <span class="string">"my_pipeflow"</span>, <span class="comment">-- define the name instance used in the logger. optional.
+</span>    logger_level=<span class="string">"info"</span> <span class="comment">-- possible values: debug, info, warn, error. optional.
+</span>})
+
+<span class="comment">-- Register the processors
+</span>pipeflow_instance:<span class="function-name">register</span>(<span class="string">'sum'</span>, sum) <span class="comment">-- register a processor
+</span>pipeflow_instance:<span class="function-name">register</span>(<span class="string">'debug'</span>, <span class="global">debug</span>)
+                :<span class="function-name">register</span>(<span class="string">'throw_error'</span>, throw_error) <span class="comment">-- :register retuns the instance
+</span>pipeflow_instance:<span class="function-name">register</span>({multiply=multiply}) <span class="comment">-- register processors using table like hash-map
+</span>
+<span class="comment">-- Define a processor that will not registered
+</span><span class="keyword">local</span> <span class="keyword">function</span> <span class="function-name">unregistered_processor</span>(option, data)
+    <span class="global">print</span>(<span class="string">'This is an unregistered_processor'</span>)
+    <span class="keyword">return</span> data
+<span class="keyword">end</span>
+
+<span class="comment">-- Run the pipeline
+</span>pipeflow_instance:<span class="function-name">run_pipeline</span>(
+    pipeline, <span class="comment">-- pipeline definition
+</span>    <span class="number">45</span> <span class="comment">-- initial value of the data variable
+</span>    {} <span class="comment">-- ctx variable
+</span>    {unregistered_processor = unregistered_processor} <span class="comment">-- define unregistered processors.
+</span>)
+</pre>
+
+
+<p><a name="Pipeline_spec"></a></p>
+<h2>Pipeline spec</h2>
+
+<ul>
+    <li><code>name</code>: define the pipeline name</li>
+    <li><code>description</code>: define the pipeline description</li>
+    <li><code>processors</code>: define the processor pipeline to run</li>
+    <li><code>if</code> (string): define a condition in Lua language, it has access to <code>data</code> variable and optionally to a <code>ctx</code> (context) variable</li>
+    <li><code>ignore_failure</code> (boolean): ignore the failure of the processor</li>
+    <li><code>tag</code> (string): define a label for debugging purpose</li>
+    <li><a href="https://www.lua.org/manual/5.1/manual.html#pdf-type">type</a> (string): define the type of processor</li>
+    <li><code>options</code> (any): define the options to pass to the processor</li>
+    <li><code>on_failure</code> (table): define a sub pipeline to run if the main processor fails</li>
+</ul>
+
+<h3>Run conditionally a proccessor</h3>
+
+
+<pre>
+{
+    [<span class="string">'if'</span>]: <span class="string">"data &lt; 2"</span>, <span class="comment">-- Add a conditional processor using lua language. data is the value to process
+</span>    <span class="global">type</span> = <span class="string">"multiply"</span>,
+    options = {
+        <span class="string">"value"</span> = <span class="number">3</span>
+    }
+},
+</pre>
+
+
+<p>This processor will run if this fulfill the condition in the <code>if</code> field.</p>
+
+<h3>Ignore failure</h3>
+
+<p>Define the <code>ignore_failure</code> field to declare if ignoring the errors in the processor.</p>
+
+
+<pre>
+{
+    <span class="global">type</span> = <span class="string">"processor_throw_error"</span>,
+    ignore_failure = <span class="keyword">true</span>
+},
+</pre>
+
+
+<h3>On failure</h3>
+
+<p>Add the <code>on_failure</code> field that defines a sub pipeline that will be run if the main processor fails.</p>
+
+
+<pre>
+{
+    <span class="global">type</span> = <span class="string">"error"</span>,
+    options = {
+        <span class="string">"message"</span>: <span class="string">"This is an error"</span>
+    }
+    on_failure: { <span class="comment">-- define a on failure sub pipeline to run if the parent processor fails
+</span>        {
+            <span class="string">"type"</span> = <span class="string">"debug"</span>,
+            <span class="string">"options"</span> = {
+                <span class="string">"label"</span>: <span class="string">"Debug on error"</span>
+            }
+        },
+    }
+},
+</pre>
+
+
+<p><a name="data_variable"></a></p>
+<h2>data variable</h2>
+
+<p>The <code>data</code> variable is the value to transform/manage in the processors.</p>
+
+<p><a name="ctx_variable"></a></p>
+<h2>ctx variable</h2>
+
+<p>The <code>ctx</code> variable defines the context for the pipeline run, this can be used in the evaluations of logic of processors.</p>
+
+<p><a name="Unregistered_processors"></a></p>
+<h2>Unregistered processors</h2>
+
+<p>When using the pipeflow manager, you can pass unregistered processors to the pipeline run.</p>
+
+
+<pre>
+<span class="comment">-- Run the pipeline
+</span>pipeflow_instance:<span class="function-name">run_pipeline</span>(
+    pipeline, <span class="comment">-- pipeline definition
+</span>    <span class="number">45</span> <span class="comment">-- initial value of the data variable
+</span>    {} <span class="comment">-- ctx variable
+</span>    {unregistered_processor = unregistered_processor} <span class="comment">-- define unregistered processors.
+</span>)
+</pre>
+
+
+<p><a name="Logger"></a></p>
+<h2>Logger</h2>
+
+<p>The run pipeline and pipeflow manager can use a logger that has the following methods:</p>
+
+<ul>
+    <li>debug, info, warn, error: define the level log methods</li>
+    <li>get_logger: create a child logger used in the pipeline run</li>
+</ul>
+
+<h1>Generate docs</h1>
+
+
+<pre>
+luaroks install ldoc
+ldoc .
+</pre>
+
+
+<p><a name="Change_version"></a></p>
+<h2>Change version</h2>
+
+<p>Change the version variable in <code>config.ld</code>.</p>
+
+<h1>Development</h1>
+
+<p><a name="Run_environment"></a></p>
+<h2>Run environment</h2>
+
+
+<pre>
+docker compose -f docker-compose.dev.yml up -d
+</pre>
+
+
+<p><a name="Access_to_container"></a></p>
+<h2>Access to container</h2>
+
+
+<pre>
+docker compose -f docker-compose.dev.yml exec pipeflow-dev sh
+</pre>
+
+
+<p><a name="Code_formatting"></a></p>
+<h2>Code formatting</h2>
+
+<ul>
+    <li>stylua:</li>
+</ul>
+
+<blockquote>
+    <p>In alpine, it installs the interpeter with:</p>
+</blockquote>
+<pre><code> apk add libc6-compat
+</code></pre>
+
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-09-30 15:02:51 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
