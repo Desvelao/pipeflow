@@ -1,0 +1,431 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>pipeflow - Process data in a pipeline (v0.1.0)</title>
+    <link rel="stylesheet" href="ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>pipeflow</h1>
+
+
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Metamethods">Metamethods</a></li>
+<li><a href="#Methods">Methods</a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="nowrap">
+  <li><strong>Pipeflow</strong></li>
+</ul>
+<h2>Topics</h2>
+<ul class="">
+  <li><a href="topics/README.md.html">README</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>Pipeflow</code></h1>
+<p>Library to process data through a pipeline.</p>
+<p> Callable module.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#pipeflow_processor.run">pipeflow_processor.run (step_options, data, ctx, utils)</a></td>
+	<td class="summary">Does the processor run function.</td>
+	</tr>
+</table>
+<h2><a href="#Metamethods">Metamethods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#pipeflow:__call">pipeflow:__call (pipeline, processors, data, ctx, utils)</a></td>
+	<td class="summary">Call the module to run a pipeline.</td>
+	</tr>
+</table>
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#pipeflow:new">pipeflow:new (options)</a></td>
+	<td class="summary">Create a processor manager instance</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#pipeflow:register">pipeflow:register (name, processor)</a></td>
+	<td class="summary">Register a processor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#pipeflow:run_pipeline">pipeflow:run_pipeline (pipeline, data, ctx, unregistered_processors)</a></td>
+	<td class="summary">Run pipeline.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#pipeflow:evaluate_return">pipeflow:evaluate_return (str, ctx)</a></td>
+	<td class="summary">Evaluate return code.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#pipeflow:evaluate_condition">pipeflow:evaluate_condition (str, ctx)</a></td>
+	<td class="summary">Evaluate condition code.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Functions"></a>Functions</h2>
+    Methods
+    <dl class="function">
+    <dt>
+    <a name = "pipeflow_processor.run"></a>
+    <strong>pipeflow_processor.run (step_options, data, ctx, utils)</strong>
+    </dt>
+    <dd>
+    Does the processor run function.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">step_options</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Step options
+        </li>
+        <li><span class="parameter">data</span>
+            <span class="types"><span class="type">any</span></span>
+         data variable.
+        </li>
+        <li><span class="parameter">ctx</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Context (ctx) variable
+        </li>
+        <li><span class="parameter">utils</span> Utils variable
+        <ul>
+        <li><span class="parameter">end_pipeline</span>
+            <span class="types"><span class="type">function</span></span>
+         Mark the pipeline to skip
+        </li>
+        <li><span class="parameter">evaluate_condition</span>
+            <span class="types"><span class="type">Pipeflow.evaluate_condition</span></span>
+         Mark the pipeline to skip
+        </li>
+        <li><span class="parameter">evaluate_return</span>
+            <span class="types"><span class="type">Pipeflow.evaluate_return</span></span>
+         Mark the pipeline to skip
+        </li>
+        <li><span class="parameter">evaluate</span>
+            <span class="types"><span class="type">Pipeflow.evaluate</span></span>
+         Mark the pipeline to skip
+        </li>
+        <li><span class="parameter">evaluate</span>
+            <span class="types"><span class="type">Pipeflow.evaluate</span></span>
+         Mark the pipeline to skip
+        </li>
+        <li><span class="parameter">find_processor</span>
+            <span class="types"><span class="type">function</span></span>
+         Find the processor in the pipeline
+        </li>
+        <li><span class="parameter">logger</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Step logger instance
+        </li>
+        </li></ul>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        utils
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Metamethods"></a>Metamethods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "pipeflow:__call"></a>
+    <strong>pipeflow:__call (pipeline, processors, data, ctx, utils)</strong>
+    </dt>
+    <dd>
+    Call the module to run a pipeline.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pipeline</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Pipeline definition
+        </li>
+        <li><span class="parameter">processors</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Processors
+        </li>
+        <li><span class="parameter">data</span>
+            <span class="types"><span class="type">any</span></span>
+         Initial value of data variable.
+        </li>
+        <li><span class="parameter">ctx</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Context (ctx) variable.
+        </li>
+        <li><span class="parameter">utils</span> variable. Context.
+        <ul>
+        <li><span class="parameter">logger</span>
+            <span class="types"><span class="type">function</span></span>
+         Logger.
+        </li>
+        <li><span class="parameter">create_logger</span>
+            <span class="types"><span class="type">function</span></span>
+         Create logger function.
+        </li>
+        </li></ul>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Result of run_pipeline
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "pipeflow:new"></a>
+    <strong>pipeflow:new (options)</strong>
+    </dt>
+    <dd>
+    Create a processor manager instance
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">options</span>
+
+
+        <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Name.
+         (<em>default</em> "")
+        </li>
+        <li><span class="parameter">logger_level</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Logger level, one of "debug", "info", "warn", "error"
+         (<em>default</em> "info")
+        </li>
+        </li></ul>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="index.html#">Pipeflow</a></span>
+
+
+
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example"><span class="keyword">local</span> pipeflow = <span class="global">require</span>(<span class="string">"pipeflow"</span>)
+<span class="keyword">local</span> mypipeflow = pipeflow:<span class="function-name">new</span>({name = <span class="string">"mypipeline"</span>, logger_level = <span class="string">"info"</span>})</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "pipeflow:register"></a>
+    <strong>pipeflow:register (name, processor)</strong>
+    </dt>
+    <dd>
+    Register a processor.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+         string Processor name
+        </li>
+        <li><span class="parameter">processor</span>
+            <span class="types"><span class="type">pipeflow_processor.run</span></span>
+         Processor run function
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="index.html#">Pipeflow</a></span>
+
+
+
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">mypipeflow:<span class="function-name">register</span>(<span class="string">"myprocessor"</span>,
+   <span class="keyword">function</span> <span class="function-name">add</span>(step_options, data, ctx, utils)
+     <span class="keyword">return</span> data + step_options.value
+   <span class="keyword">end</span>
+ )</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "pipeflow:run_pipeline"></a>
+    <strong>pipeflow:run_pipeline (pipeline, data, ctx, unregistered_processors)</strong>
+    </dt>
+    <dd>
+    Run pipeline.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">pipeline</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Pipeline definition.
+        </li>
+        <li><span class="parameter">data</span>
+            <span class="types"><span class="type">any</span></span>
+         Initial value of data variable.
+        </li>
+        <li><span class="parameter">ctx</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Context (ctx) variable.
+        </li>
+        <li><span class="parameter">unregistered_processors</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Unregistred processors.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        any
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">mypipeflow:<span class="function-name">run_pipeline</span>(mypipeline, initial_data, ctx, my_unregistered_processors)</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "pipeflow:evaluate_return"></a>
+    <strong>pipeflow:evaluate_return (str, ctx)</strong>
+    </dt>
+    <dd>
+    Evaluate return code.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Code to eval.
+        </li>
+        <li><span class="parameter">ctx</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         ctx variable. Context.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        any
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">mypipeflow:<span class="function-name">evaluate_return</span>(<span class="string">"3+result"</span>, {result = <span class="number">4</span>})</pre>
+    </ul>
+
+</dd>
+    <dt>
+    <a name = "pipeflow:evaluate_condition"></a>
+    <strong>pipeflow:evaluate_condition (str, ctx)</strong>
+    </dt>
+    <dd>
+    Evaluate condition code.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Code to eval.
+        </li>
+        <li><span class="parameter">ctx</span>
+            <span class="types"><a class="type" href="https://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         ctx variable. Context.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        boolean
+    </ol>
+
+
+
+    <h3>Usage:</h3>
+    <ul>
+        <pre class="example">mypipeflow:<span class="function-name">evaluate_condition</span>(<span class="string">"3+2 &gt; result"</span>, {result = <span class="number">4</span>})</pre>
+    </ul>
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/lunarmodules/LDoc">LDoc 1.5.0</a></i>
+<i style="float:right;">Last updated 2025-09-30 14:43:41 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
