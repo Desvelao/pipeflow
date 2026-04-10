@@ -28,7 +28,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y lua5.1 luarocks
-          luarocks install dkjson
+          luarocks install dkjson --local
 
       - name: Resolve rockspec
         id: rockspec
