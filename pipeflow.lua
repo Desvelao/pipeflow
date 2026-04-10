@@ -345,7 +345,7 @@ end
 
 --- Run pipeline.
 -- @usage
---	mypipeflow:run_pipeline(mypipeline, initial_data, ctx, my_unregistered_processors)
+--	mypipeflow:run(mypipeline, initial_data, ctx, my_unregistered_processors)
 -- @tparam table pipeline Pipeline definition.
 -- @tparam any data Initial value of data variable.
 -- @tparam table ctx Context (ctx) variable.

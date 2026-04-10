@@ -138,7 +138,7 @@ local function unregistered_processor(option, data)
 end
 
 -- Run the pipeline
-pipeflow_instance:run_pipeline(
+pipeflow_instance:run(
     pipeline, -- pipeline definition
     45 -- initial value of the data variable
     {} -- ctx variable
@@ -218,7 +218,7 @@ When using the pipeflow manager, you can pass unregistered processors to the pip
 
 ```lua
 -- Run the pipeline
-pipeflow_instance:run_pipeline(
+pipeflow_instance:run(
     pipeline, -- pipeline definition
     45 -- initial value of the data variable
     {} -- ctx variable
