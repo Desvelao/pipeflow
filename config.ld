@@ -1,9 +1,8 @@
-local version = 'v0.1.0'
+local version = 'v0.1.1'
 
 project = 'pipeflow'
 description = 'Process data in a pipeline'
-full_description = [[
-]]
+full_description = [[]]
 title = 'pipeflow - Process data in a pipeline (' .. version .. ')'
 file = {'pipeflow.lua',exclude = {}}
 dir = 'docs/' .. version

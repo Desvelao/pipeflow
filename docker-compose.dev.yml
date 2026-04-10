@@ -2,7 +2,7 @@ services:
   pipeflow-dev:
     build: ./docker
     image: pipeflow-dev
-    container_name: price-scrapper
+    container_name: pipeflow
     volumes:
       - ./:/app
       - ./docker/docker-entrypoint.sh:/docker-entrypoint.sh:ro

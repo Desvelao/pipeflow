@@ -1,8 +1,8 @@
 package = "pipeflow"
-version = "0.1.0-1"
+version = "0.1.1-1"
 source = {
    url = "git+https://github.com/Desvelao/pipeflow",
-   branch = "v0.1.0"
+   branch = "v0.1.1"
 }
 description = {
    summary = 'Transform data through a pipeline definition',

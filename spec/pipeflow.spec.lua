@@ -119,6 +119,51 @@ describe("Run pipeline", function()
 		assert.are.equal("BaBcDezYx", PM(pipeline, processors, "b"))
 	end)
 
+	it("Basic pipeline with conditional processor", function()
+		local pipeline = {
+			name = "pipeline1",
+			processors = {
+				{
+					type = "upper",
+				},
+				{
+					type = "concat",
+					options = {
+						value = "aBcDe",
+					},
+				},
+				{
+					type = "concat",
+					options = {
+						value = "zYx",
+					},
+				},
+				{
+					["if"] = "renamed_data:sub(1, 1) == 'A'",
+					type = "upper",
+				},
+				{
+					["if"] = "renamed_data:sub(1, 2) == 'AB' and renamed_ctx.var == 1 and renamed_step.type == 'lower' and renamed_step_options.any_option == 3",
+					type = "lower",
+					options = {
+						any_option = 3,
+					},
+				},
+			},
+			options = {
+				eval_accessor_data = "renamed_data",
+				eval_accessor_ctx = "renamed_ctx",
+				eval_accessor_step = "renamed_step",
+				eval_accessor_step_options = "renamed_step_options",
+			},
+		}
+
+		assert.are.equal("AABCDEZYX", PM(pipeline, processors, "A", { var = 1 }))
+		assert.are.equal("AABCDEZYX", PM(pipeline, processors, "a", { var = 1 }))
+		assert.are.equal("ababcdezyx", PM(pipeline, processors, "ab", { var = 1 }))
+		assert.are.equal("BaBcDezYx", PM(pipeline, processors, "b", { var = 1 }))
+	end)
+
 	it("Run pipeline with conditional processors and error", function()
 		local pipeline = {
 			name = "pipeline1",
@@ -152,7 +197,7 @@ describe("Run pipeline", function()
 			},
 		}
 
-		-- print(pm:run_pipeline(pipeline, 'A'))
+		-- print(pm:run(pipeline, 'A'))
 		assert.has.errors(function()
 			PM(pipeline, processors, "A")
 		end)
@@ -441,12 +486,12 @@ describe("Processor manager", function()
 				},
 			}
 
-			assert.are.equal(25, pm:run_pipeline(pipeline, 0))
-			assert.are.equal(40, pm:run_pipeline(pipeline, 1))
-			assert.are.equal(1075, pm:run_pipeline(pipeline, 70))
-			assert.are.equal(4525, pm:run_pipeline(pipeline, 300))
-			assert.are.equal(-50, pm:run_pipeline(pipeline, -5))
-			assert.are.equal(-5, pm:run_pipeline(pipeline, -2))
+			assert.are.equal(25, pm:run(pipeline, 0))
+			assert.are.equal(40, pm:run(pipeline, 1))
+			assert.are.equal(1075, pm:run(pipeline, 70))
+			assert.are.equal(4525, pm:run(pipeline, 300))
+			assert.are.equal(-50, pm:run(pipeline, -5))
+			assert.are.equal(-5, pm:run(pipeline, -2))
 		end)
 
 		it("Basic pipeline with conditional processor", function()
@@ -480,10 +525,53 @@ describe("Processor manager", function()
 				},
 			}
 
-			assert.are.equal("AABCDEZYX", pm:run_pipeline(pipeline, "A"))
-			assert.are.equal("AABCDEZYX", pm:run_pipeline(pipeline, "a"))
-			assert.are.equal("ABABCDEZYX", pm:run_pipeline(pipeline, "ab"))
-			assert.are.equal("BaBcDezYx", pm:run_pipeline(pipeline, "b"))
+			assert.are.equal("AABCDEZYX", pm:run(pipeline, "A"))
+			assert.are.equal("AABCDEZYX", pm:run(pipeline, "a"))
+			assert.are.equal("ABABCDEZYX", pm:run(pipeline, "ab"))
+			assert.are.equal("BaBcDezYx", pm:run(pipeline, "b"))
+		end)
+
+		it("Pipeline with conditional processor and custom evalution names", function()
+			local pm = PM:new({ name = "Test" })
+			pm:register("upper", processor_text_upper)
+			pm:register("concat", processor_text_concat)
+			pm:register("lower", processor_text_lower)
+
+			local pipeline = {
+				name = "pipeline1",
+				processors = {
+					{
+						type = "upper",
+					},
+					{
+						type = "concat",
+						options = {
+							value = "aBcDe",
+						},
+					},
+					{
+						type = "concat",
+						options = {
+							value = "zYx",
+						},
+					},
+					{
+						["if"] = "renamed_data:sub(1, 1) == 'A'",
+						type = "upper",
+					},
+				},
+				options = {
+					eval_accessor_data = "renamed_data",
+					eval_accessor_ctx = "renamed_ctx",
+					eval_accessor_step = "renamed_step",
+					eval_accessor_step_options = "renamed_step_options",
+				},
+			}
+
+			assert.are.equal("AABCDEZYX", pm:run(pipeline, "A"))
+			assert.are.equal("AABCDEZYX", pm:run(pipeline, "a"))
+			assert.are.equal("ABABCDEZYX", pm:run(pipeline, "ab"))
+			assert.are.equal("BaBcDezYx", pm:run(pipeline, "b"))
 		end)
 
 		it("Run pipeline with conditional processors and error", function()
@@ -525,15 +613,15 @@ describe("Processor manager", function()
 				},
 			}
 
-			-- print(pm:run_pipeline(pipeline, 'A'))
+			-- print(pm:run(pipeline, 'A'))
 			assert.has.errors(function()
-				pm:run_pipeline(pipeline, "A")
+				pm:run(pipeline, "A")
 			end)
 			assert.has_no.errors(function()
-				pm:run_pipeline(pipeline, "B")
+				pm:run(pipeline, "B")
 			end)
 			assert.has_no.errors(function()
-				pm:run_pipeline(pipeline, "C")
+				pm:run(pipeline, "C")
 			end)
 		end)
 
@@ -585,7 +673,7 @@ describe("Processor manager", function()
 				},
 			}
 
-			assert.are.equal("-ERROR_RECOVERED-zYx", pm:run_pipeline(pipeline, "A"))
+			assert.are.equal("-ERROR_RECOVERED-zYx", pm:run(pipeline, "A"))
 		end)
 
 		it("Pipeline with conditional processor error", function()
@@ -629,7 +717,7 @@ describe("Processor manager", function()
 			}
 
 			assert.has.errors(function()
-				pm:run_pipeline(pipeline, "A")
+				pm:run(pipeline, "A")
 			end)
 		end)
 
@@ -674,7 +762,7 @@ describe("Processor manager", function()
 				},
 			}
 
-			assert.are.equal("AABCDEZYX", pm:run_pipeline(pipeline, "A"))
+			assert.are.equal("AABCDEZYX", pm:run(pipeline, "A"))
 		end)
 
 		it("Run pipeline skip", function()
@@ -722,7 +810,7 @@ describe("Processor manager", function()
 				},
 			}
 
-			assert.are.equal("AaBcDe", pm:run_pipeline(pipeline, "A"))
+			assert.are.equal("AaBcDe", pm:run(pipeline, "A"))
 		end)
 	end)
 end)

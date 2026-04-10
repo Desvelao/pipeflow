@@ -160,8 +160,8 @@ end
 
 -- Function to iterate over a processor group
 -- and decide whether to apply each processor.
-local function _run_pipeline(pipeline, processors, data, ctx, pm)
-	if pipeline == nil then
+local function _run_pipeline(steps, processors, data, ctx, pm)
+	if steps == nil then
 		error("No pipeline")
 	end
 
@@ -170,9 +170,10 @@ local function _run_pipeline(pipeline, processors, data, ctx, pm)
 		skip = true
 	end
 
-	for i, step in ipairs(pipeline) do
+	for i, step in ipairs(steps) do
 		local logger = pm.logger:get_logger({
-			name = string.format("step[type=%s]", step.type) .. (step.tag and string.format("[tag=%s]", step.tag) or ""),
+			name = string.format("step[type=%s]", step.type)
+				.. (step.tag and string.format("[tag=%s]", step.tag) or ""),
 		})
 		logger.debug("Running step")
 		local processor = find_processor(step["type"], processors) or step.processor
@@ -181,10 +182,36 @@ local function _run_pipeline(pipeline, processors, data, ctx, pm)
 			local should_run = true
 			if step["if"] then
 				-- Evaluate the "if" condition.
-				logger.debug(string.format("Evaluating condition [%s]", tostring(step["if"])))
-				local if_eval = combine_tables_no_overwrite({}, { data = data }, { ctx = ctx })
+				local eval_accessor_data = pm.pipeline_options and pm.pipeline_options.eval_accessor_data or "data"
+				local eval_accessor_ctx = pm.pipeline_options and pm.pipeline_options.eval_accessor_ctx or "ctx"
+				local eval_accessor_step = pm.pipeline_options and pm.pipeline_options.eval_accessor_step or "step"
+				local eval_accessor_step_options = pm.pipeline_options
+						and pm.pipeline_options.eval_accessor_step_options
+					or "step_options"
+				logger.debug(
+					string.format(
+						"Evaluating condition [%s] with [data=%s] [ctx=%s] [step=%s] [step_options=%s]",
+						tostring(step["if"]),
+						eval_accessor_data,
+						eval_accessor_ctx,
+						eval_accessor_step,
+						eval_accessor_step_options
+					)
+				)
+				local if_eval = {
+					[eval_accessor_data] = data,
+					[eval_accessor_ctx] = ctx,
+					[eval_accessor_step] = step,
+					[eval_accessor_step_options] = step.options,
+				}
 				should_run = evaluate_condition(step["if"], if_eval)
-				logger.debug(string.format("Evaluated condition [%s]: %s", tostring(step["if"]), tostring(should_run)))
+				logger.debug(
+					string.format(
+						"Evaluated condition [%s] with [data=]: %s",
+						tostring(step["if"]),
+						tostring(should_run)
+					)
+				)
 			end
 
 			if should_run then
@@ -196,7 +223,7 @@ local function _run_pipeline(pipeline, processors, data, ctx, pm)
 						evaluate_return = evaluate_return,
 						evaluate = evaluate,
 						find_processor = find_processor,
-						logger = logger
+						logger = logger,
 					})
 				end)
 				if skip then
@@ -207,7 +234,13 @@ local function _run_pipeline(pipeline, processors, data, ctx, pm)
 				-- Manage error
 				if not ok then
 					if step.on_failure then
-						data = _run_pipeline(step.on_failure, processors, data, ctx, {logger=logger})
+						data = _run_pipeline(
+							step.on_failure,
+							processors,
+							data,
+							ctx,
+							combine_tables_no_overwrite({ logger = logger }, pm)
+						)
 						if skip then
 							logger.debug("Stopping pipeline")
 							break
@@ -246,14 +279,19 @@ end
 -- @return Result of run_pipeline
 local function run_pipeline(pipeline, processors, data, ctx, utils)
 	local logger = utils and utils.logger or (utils and utils.create_logger and utils.create_logger(pipeline))
-
 	if not logger then
 		logger = Logger:new({ name = pipeline.name })
 	else
 		logger = logger:get_logger({ name = pipeline.name })
 	end
 	logger.debug("Running pipeline")
-	return _run_pipeline(pipeline.processors, processors, data, ctx, { logger = logger })
+	return _run_pipeline(
+		pipeline.processors,
+		processors,
+		data,
+		ctx,
+		combine_tables_no_overwrite({ logger = logger, pipeline_options = pipeline.options or {} }, utils)
+	)
 end
 
 Pipeflow.__index = Pipeflow
@@ -274,11 +312,12 @@ function Pipeflow:new(options)
 	instance.name = options and options.name
 	instance.logger = Logger:new({ name = instance.name, level = options and options.logger_level })
 	instance.processors = {}
+	instance.options = options and options.options or {}
 	return instance
 end
 
 --- Register a processor.
--- @usage 
+-- @usage
 --	mypipeflow:register("myprocessor",
 --    function add(step_options, data, ctx, utils)
 --      return data + step_options.value
@@ -305,27 +344,29 @@ function Pipeflow:register(name, processor)
 end
 
 --- Run pipeline.
--- @usage 
+-- @usage
 --	mypipeflow:run_pipeline(mypipeline, initial_data, ctx, my_unregistered_processors)
 -- @tparam table pipeline Pipeline definition.
 -- @tparam any data Initial value of data variable.
 -- @tparam table ctx Context (ctx) variable.
 -- @tparam table unregistered_processors Unregistred processors.
 -- @return any
-function Pipeflow:run_pipeline(pipeline, data, ctx, unregistered_processors)
+function Pipeflow:run(pipeline, data, ctx, unregistered_processors)
 	self.logger.debug("Running pipeline")
 	local processors = self.processors
 	if unregistered_processors then
 		self.logger.debug("Adding unregistered processors to processors")
 		processors = combine_tables_no_overwrite({}, self.processors, unregistered_processors)
-		self.logger.debug("Adding unregistered processors to processors")
+		self.logger.debug("Added unregistered processors to processors")
 	end
 
-	return run_pipeline(pipeline, processors, data, ctx or {}, { logger = self.logger })
+	local pipeline_enhanced = combine_tables_no_overwrite({}, pipeline, { options = self.options })
+
+	return run_pipeline(pipeline_enhanced, processors, data, ctx or {}, { logger = self.logger })
 end
 
 --- Evaluate code.
--- @usage 
+-- @usage
 --	mypipeflow:evaluate("3+result", {result = 4})
 -- @tparam string str Code to eval.
 -- @tparam table ctx ctx variable. Context.
@@ -335,7 +376,7 @@ function Pipeflow:evaluate(str, ctx)
 end
 
 --- Evaluate return code.
--- @usage 
+-- @usage
 --	mypipeflow:evaluate_return("3+result", {result = 4})
 -- @tparam string str Code to eval.
 -- @tparam table ctx ctx variable. Context.
@@ -345,7 +386,7 @@ function Pipeflow:evaluate_return(str, ctx)
 end
 
 --- Evaluate condition code.
--- @usage 
+-- @usage
 --	mypipeflow:evaluate_condition("3+2 > result", {result = 4})
 -- @tparam string str Code to eval.
 -- @tparam table ctx ctx variable. Context.
