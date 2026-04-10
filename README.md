@@ -95,7 +95,14 @@ local pipeline = {
                 return data            
             end
         }
-    }
+    },
+    options = {
+        -- rename the variables in the if evaluation
+        -- eval_accessor_data = "renamed_data",
+        -- eval_accessor_ctx = "renamed_ctx",
+        -- eval_accessor_step = "renamed_step",
+        -- eval_accessor_step_options = "renamed_step_options",
+    },
 }
 
 local function unregistered_processor(option, data)
